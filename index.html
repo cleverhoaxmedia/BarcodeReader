@@ -3,86 +3,140 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>Merch Stand</title>
+  <title>Merch Stand POS</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=IM+Fell+English&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@500&display=swap');
 
     :root {
-      --bg:       #1a1410;
-      --surface:  #231d17;
-      --surface2: #2d2520;
-      --border:   #4a3828;
-      --gold:     #c9962a;
-      --gold-hi:  #e8b84b;
-      --text:     #e8dcc8;
-      --dim:      #8a7a62;
-      --green:    #4caf50;
-      --red:      #c0392b;
+      --bg:       #f4f5f7;
+      --surface:  #ffffff;
+      --border:   #d0d5dd;
+      --border-hi:#a0aab8;
+      --ink:      #0f1923;
+      --ink-mid:  #3d4f61;
+      --ink-dim:  #6b7f94;
+      --teal:     #0a7ea4;
+      --teal-hi:  #0993c2;
+      --teal-dim: #d0edf6;
+      --green:    #16a34a;
+      --green-dim:#dcfce7;
+      --red:      #dc2626;
+      --red-dim:  #fee2e2;
+      --amber:    #d97706;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
     body {
-      background: var(--bg); color: var(--text);
-      font-family: 'IM Fell English', serif;
-      min-height: 100dvh; display: flex; flex-direction: column;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 16px;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
     }
 
+    /* ── HEADER ── */
     header {
-      background: var(--surface); border-bottom: 2px solid var(--gold);
-      padding: 14px 20px; text-align: center; flex-shrink: 0;
+      background: var(--ink);
+      padding: 0 20px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
     }
-    header h1 { font-family: 'Cinzel', serif; font-size: 1.3rem; color: var(--gold-hi); letter-spacing: 0.1em; }
-    header p  { font-size: 0.78rem; color: var(--dim); margin-top: 2px; }
+    .brand {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.02em;
+    }
+    .brand span { color: var(--teal-hi); }
+    .brand-sub {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--ink-dim);
+      letter-spacing: 0.04em;
+    }
 
-    nav { display: flex; background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    /* ── NAV ── */
+    nav {
+      background: var(--surface);
+      border-bottom: 2px solid var(--border);
+      display: flex;
+      flex-shrink: 0;
+    }
     nav button {
-      flex: 1; padding: 11px 4px; background: none; border: none;
-      color: var(--dim); font-family: 'Cinzel', serif; font-size: 0.68rem;
-      letter-spacing: 0.08em; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s;
+      flex: 1;
+      padding: 14px 6px;
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      color: var(--ink-dim);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
     }
-    nav button.active { color: var(--gold-hi); border-bottom-color: var(--gold); }
+    nav button.active {
+      color: var(--teal);
+      border-bottom-color: var(--teal);
+    }
 
+    /* ── VIEWS ── */
     .view { display: none; flex: 1; flex-direction: column; overflow-y: auto; padding: 16px; gap: 12px; }
     .view.active { display: flex; }
 
     /* ── BUTTONS ── */
-    .btn-primary {
-      width: 100%; padding: 13px; background: var(--gold); border: none; border-radius: 6px;
-      font-family: 'Cinzel', serif; font-size: 0.85rem; font-weight: 700;
-      color: var(--bg); cursor: pointer; letter-spacing: 0.08em;
+    .btn {
+      width: 100%; padding: 16px;
+      border: none; border-radius: 8px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1rem; font-weight: 700;
+      cursor: pointer; transition: filter 0.12s;
+      letter-spacing: -0.01em;
     }
-    .btn-primary:active { background: var(--gold-hi); }
-    .btn-green {
-      width: 100%; padding: 13px; background: var(--green); border: none; border-radius: 6px;
-      font-family: 'Cinzel', serif; font-size: 0.85rem; font-weight: 700;
-      color: #fff; cursor: pointer; letter-spacing: 0.06em;
-    }
+    .btn:active { filter: brightness(0.88); }
+    .btn-primary { background: var(--teal);  color: #fff; }
+    .btn-green   { background: var(--green); color: #fff; }
     .btn-outline {
-      width: 100%; padding: 11px; background: none; border: 2px solid var(--gold);
-      border-radius: 6px; font-family: 'Cinzel', serif; font-size: 0.82rem;
-      color: var(--gold-hi); cursor: pointer; letter-spacing: 0.08em;
+      background: none;
+      border: 2px solid var(--teal);
+      color: var(--teal);
+      padding: 14px;
     }
-    .btn-outline:active { background: var(--gold); color: var(--bg); }
     .btn-ghost {
-      width: 100%; padding: 10px; background: none; border: 1px solid var(--border);
-      border-radius: 6px; font-family: 'Cinzel', serif; font-size: 0.72rem;
-      color: var(--dim); cursor: pointer;
+      background: none;
+      border: 1.5px solid var(--border);
+      color: var(--ink-mid);
+      font-weight: 600;
+      padding: 13px;
     }
     .btn-danger {
-      width: 100%; padding: 10px; background: none; border: 1px solid var(--red);
-      border-radius: 6px; font-family: 'Cinzel', serif; font-size: 0.72rem;
-      color: var(--red); cursor: pointer;
+      background: none;
+      border: 1.5px solid var(--red);
+      color: var(--red);
+      font-weight: 600;
+      padding: 13px;
     }
 
-    /* ── SCANNER ── */
+    /* ── SCANNER VIEW ── */
     #scanner-view { align-items: center; }
 
     #camera-wrap {
-      position: relative; width: 100%; max-width: 360px;
-      border-radius: 8px; overflow: hidden; border: 2px solid var(--border);
-      background: #000; aspect-ratio: 1;
+      position: relative;
+      width: 100%; max-width: 380px;
+      border-radius: 12px; overflow: hidden;
+      border: 2px solid var(--border);
+      background: var(--ink);
+      aspect-ratio: 1;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.10);
     }
     #preview { width: 100%; height: 100%; object-fit: cover; display: block; }
     #scan-canvas { display: none; }
@@ -90,161 +144,285 @@
     .scan-frame { position: absolute; inset: 0; pointer-events: none; }
     .scan-frame::before, .scan-frame::after,
     .scan-frame span::before, .scan-frame span::after {
-      content: ''; position: absolute; width: 28px; height: 28px;
-      border-color: var(--gold); border-style: solid;
+      content: ''; position: absolute; width: 32px; height: 32px;
+      border-color: var(--teal-hi); border-style: solid;
     }
-    .scan-frame::before      { top: 18px; left: 18px;  border-width: 3px 0 0 3px; }
-    .scan-frame::after       { top: 18px; right: 18px; border-width: 3px 3px 0 0; }
-    .scan-frame span::before { bottom: 18px; left: 18px;  border-width: 0 0 3px 3px; }
-    .scan-frame span::after  { bottom: 18px; right: 18px; border-width: 0 3px 3px 0; }
+    .scan-frame::before      { top: 16px; left: 16px;  border-width: 3px 0 0 3px; border-radius: 4px 0 0 0; }
+    .scan-frame::after       { top: 16px; right: 16px; border-width: 3px 3px 0 0; border-radius: 0 4px 0 0; }
+    .scan-frame span::before { bottom: 16px; left: 16px;  border-width: 0 0 3px 3px; border-radius: 0 0 0 4px; }
+    .scan-frame span::after  { bottom: 16px; right: 16px; border-width: 0 3px 3px 0; border-radius: 0 0 4px 0; }
 
-    #scan-status { font-size: 0.9rem; color: var(--dim); text-align: center; min-height: 1.4em; }
+    #scan-status {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--ink-dim);
+      text-align: center;
+      min-height: 1.5em;
+    }
 
+    /* Transaction Bar */
     #txn-bar {
-      width: 100%; max-width: 360px; background: var(--surface);
-      border: 1px solid var(--gold); border-radius: 8px;
-      padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; gap: 12px;
+      width: 100%; max-width: 380px;
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
     }
-    .txn-label { font-family: 'Cinzel', serif; font-size: 0.7rem; color: var(--dim); letter-spacing: 0.08em; }
-    .txn-total { font-size: 1.6rem; color: var(--gold-hi); line-height: 1; }
-    .txn-count { font-size: 0.72rem; color: var(--dim); margin-top: 2px; }
+    .txn-label { font-size: 0.72rem; font-weight: 700; color: var(--ink-dim); letter-spacing: 0.06em; text-transform: uppercase; }
+    .txn-total { font-size: 2rem; font-weight: 800; color: var(--ink); line-height: 1; margin-top: 2px; letter-spacing: -0.03em; }
+    .txn-count { font-size: 0.82rem; font-weight: 500; color: var(--ink-dim); margin-top: 3px; }
+
     #checkout-btn {
-      padding: 12px 18px; background: var(--green); border: none; border-radius: 6px;
-      font-family: 'Cinzel', serif; font-size: 0.8rem; font-weight: 700;
-      color: #fff; cursor: pointer; white-space: nowrap;
+      padding: 14px 22px;
+      background: var(--green);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: filter 0.12s;
+      box-shadow: 0 2px 8px rgba(22,163,74,0.25);
     }
-    #checkout-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-    #checkout-btn:not(:disabled):active { filter: brightness(0.85); }
+    #checkout-btn:disabled { opacity: 0.3; cursor: not-allowed; box-shadow: none; }
+    #checkout-btn:not(:disabled):active { filter: brightness(0.88); }
 
     /* ── MODALS ── */
     .modal {
-      position: fixed; inset: 0; background: rgba(26,20,16,0.95);
-      display: flex; flex-direction: column; align-items: center;
-      justify-content: center; padding: 24px; gap: 12px; z-index: 100;
-      opacity: 0; pointer-events: none; transition: opacity 0.2s;
+      position: fixed; inset: 0;
+      background: rgba(15,25,35,0.7);
+      backdrop-filter: blur(4px);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 24px; gap: 14px; z-index: 100;
+      opacity: 0; pointer-events: none; transition: opacity 0.18s;
     }
     .modal.show { opacity: 1; pointer-events: all; }
-    .modal h2 { font-family: 'Cinzel', serif; font-size: 1.2rem; color: var(--gold-hi); }
+    .modal-title {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.02em;
+    }
 
     /* Sale flash */
-    #sale-flash .flash-sku   { font-size: 0.78rem; color: var(--dim); }
-    #sale-flash .flash-name  { font-family: 'Cinzel', serif; font-size: 2rem; color: var(--gold-hi); }
-    #sale-flash .flash-price { font-size: 1.4rem; color: var(--text); }
-    .flash-btns { display: flex; gap: 10px; width: 100%; max-width: 360px; margin-top: 8px; }
-    .flash-btns .btn-green { flex: 2; }
-    .flash-btns .btn-ghost { flex: 1; }
-    .qty-stepper {
-      display: flex; align-items: center; gap: 0;
-      border: 1px solid var(--border); border-radius: 6px; overflow: hidden;
+    .flash-sku {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.5);
+      letter-spacing: 0.08em;
     }
-    .qty-stepper button {
-      width: 44px; height: 44px; background: var(--surface2); border: none;
-      color: var(--gold-hi); font-size: 1.4rem; cursor: pointer; line-height: 1;
-    }
-    .qty-stepper button:active { background: var(--border); }
-    .qty-stepper input {
-      width: 52px; height: 44px; background: var(--bg); border: none;
-      color: var(--text); font-family: 'Cinzel', serif; font-size: 1.1rem;
+    .flash-name {
+      font-size: 2.4rem;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.03em;
       text-align: center;
     }
-    /* hide number input spinners */
+    .flash-price {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--teal-hi);
+      letter-spacing: -0.02em;
+    }
+
+    /* Qty stepper */
+    .qty-stepper {
+      display: flex;
+      align-items: stretch;
+      background: rgba(255,255,255,0.1);
+      border: 2px solid rgba(255,255,255,0.2);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .qty-stepper button {
+      width: 56px; height: 56px;
+      background: none; border: none;
+      color: #fff;
+      font-size: 1.6rem;
+      font-weight: 300;
+      cursor: pointer;
+      transition: background 0.12s;
+    }
+    .qty-stepper button:active { background: rgba(255,255,255,0.15); }
+    .qty-stepper input {
+      width: 64px; height: 56px;
+      background: none; border: none;
+      color: #fff;
+      font-family: 'DM Mono', monospace;
+      font-size: 1.4rem;
+      font-weight: 500;
+      text-align: center;
+    }
     .qty-stepper input::-webkit-outer-spin-button,
     .qty-stepper input::-webkit-inner-spin-button { -webkit-appearance: none; }
     .qty-stepper input[type=number] { -moz-appearance: textfield; }
 
+    .flash-btns { display: flex; gap: 10px; width: 100%; max-width: 380px; margin-top: 4px; }
+    .flash-btns .btn-green { flex: 2; font-size: 1rem; padding: 16px; }
+    .flash-btns .btn-ghost { flex: 1; color: rgba(255,255,255,0.6); border-color: rgba(255,255,255,0.2); }
+
     /* Checkout modal */
     .checkout-items {
-      width: 100%; max-width: 360px; max-height: 40vh;
-      overflow-y: auto; display: flex; flex-direction: column; gap: 8px;
+      width: 100%; max-width: 380px;
+      max-height: 38vh; overflow-y: auto;
+      display: flex; flex-direction: column; gap: 8px;
     }
     .checkout-row {
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 6px; padding: 10px 14px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 8px;
+      padding: 12px 16px;
       display: flex; justify-content: space-between; align-items: center;
     }
-    .cr-name  { font-size: 0.95rem; }
-    .cr-qty   { font-size: 0.72rem; color: var(--dim); margin-top: 2px; }
-    .cr-price { font-size: 1.05rem; color: var(--gold-hi); }
+    .cr-name  { font-size: 1rem; font-weight: 600; color: #fff; }
+    .cr-qty   { font-size: 0.8rem; color: rgba(255,255,255,0.5); margin-top: 2px; font-family: 'DM Mono', monospace; }
+    .cr-price { font-size: 1.1rem; font-weight: 700; color: var(--teal-hi); font-family: 'DM Mono', monospace; }
+
     .checkout-total-row {
-      width: 100%; max-width: 360px;
+      width: 100%; max-width: 380px;
       display: flex; justify-content: space-between; align-items: center;
-      border-top: 1px solid var(--gold); padding-top: 12px;
-      font-family: 'Cinzel', serif; font-size: 1.1rem; color: var(--gold-hi);
+      border-top: 1px solid rgba(255,255,255,0.2);
+      padding-top: 14px;
+      color: #fff;
     }
-    .modal-btns { display: flex; gap: 10px; width: 100%; max-width: 360px; }
+    .checkout-total-row span:first-child { font-size: 1.1rem; font-weight: 700; }
+    .checkout-total-row span:last-child  { font-size: 1.6rem; font-weight: 800; color: var(--green); font-family: 'DM Mono', monospace; letter-spacing: -0.02em; }
+
+    .modal-btns { display: flex; gap: 10px; width: 100%; max-width: 380px; }
 
     /* Add item modal */
-    .modal-field { width: 100%; max-width: 360px; }
+    .modal-field { width: 100%; max-width: 380px; }
     .modal-field label {
-      display: block; font-size: 0.72rem; color: var(--dim);
-      margin-bottom: 6px; letter-spacing: 0.06em;
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 8px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
     }
     .modal-field input {
-      width: 100%; padding: 12px; background: var(--surface2);
-      border: 1px solid var(--border); border-radius: 6px;
-      color: var(--text); font-family: 'IM Fell English', serif; font-size: 1rem;
+      width: 100%; padding: 14px 16px;
+      background: rgba(255,255,255,0.08);
+      border: 1.5px solid rgba(255,255,255,0.2);
+      border-radius: 8px;
+      color: #fff;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 500;
+      outline: none;
     }
-    .sku-preview { font-size: 0.72rem; color: var(--dim); margin-top: 6px; }
+    .modal-field input:focus { border-color: var(--teal-hi); }
+    .sku-preview {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.4);
+      margin-top: 6px;
+      letter-spacing: 0.04em;
+    }
 
     /* ── ITEMS VIEW ── */
-    .item-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
-    .item-card-header {
-      padding: 14px 16px; display: flex; justify-content: space-between;
-      align-items: center; cursor: pointer;
+    .item-card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
     }
-    .iname  { font-family: 'Cinzel', serif; font-size: 1rem; color: var(--gold-hi); }
-    .isku   { font-size: 0.7rem; color: var(--dim); margin-top: 2px; }
-    .iprice { font-size: 1.1rem; }
-    .item-card-body { display: none; padding: 14px 16px; border-top: 1px solid var(--border); flex-direction: column; gap: 12px; }
+    .item-card-header {
+      padding: 16px 18px;
+      display: flex; justify-content: space-between; align-items: center;
+      cursor: pointer;
+    }
+    .item-card-header:active { background: var(--bg); }
+    .iname  { font-size: 1.05rem; font-weight: 700; color: var(--ink); }
+    .isku   { font-family: 'DM Mono', monospace; font-size: 0.72rem; color: var(--ink-dim); margin-top: 3px; letter-spacing: 0.04em; }
+    .iprice { font-family: 'DM Mono', monospace; font-size: 1.2rem; font-weight: 500; color: var(--ink); }
+
+    .item-card-body { display: none; padding: 16px 18px; border-top: 1.5px solid var(--border); flex-direction: column; gap: 14px; background: var(--bg); }
     .item-card-body.open { display: flex; }
     .qr-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-    .qr-label { font-size: 0.72rem; color: var(--dim); }
+    .qr-label { font-family: 'DM Mono', monospace; font-size: 0.72rem; color: var(--ink-dim); letter-spacing: 0.04em; }
+    .section-label { font-size: 0.72rem; font-weight: 700; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+
     .price-edit-row { display: flex; gap: 8px; }
     .price-edit-row input {
-      flex: 1; padding: 10px 12px; background: var(--bg);
-      border: 1px solid var(--border); border-radius: 6px;
-      color: var(--text); font-family: 'IM Fell English', serif; font-size: 1rem;
+      flex: 1; padding: 12px 14px;
+      background: var(--surface); border: 1.5px solid var(--border); border-radius: 8px;
+      color: var(--ink); font-family: 'DM Mono', monospace; font-size: 1.05rem;
+      outline: none;
     }
+    .price-edit-row input:focus { border-color: var(--teal); }
     .price-edit-row .save-btn {
-      padding: 10px 16px; background: var(--gold); border: none; border-radius: 6px;
-      font-family: 'Cinzel', serif; font-size: 0.75rem; font-weight: 700;
-      color: var(--bg); cursor: pointer;
+      padding: 12px 18px;
+      background: var(--teal); border: none; border-radius: 8px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.85rem; font-weight: 700; color: #fff; cursor: pointer;
     }
 
     /* ── LOG VIEW ── */
     .log-summary {
-      background: var(--surface); border: 1px solid var(--gold); border-radius: 8px;
-      padding: 16px; display: flex; justify-content: space-between; align-items: center;
+      background: var(--ink);
+      border-radius: 10px;
+      padding: 18px 20px;
+      display: flex; justify-content: space-between; align-items: center;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.12);
     }
-    .slabel { font-family: 'Cinzel', serif; font-size: 0.72rem; color: var(--dim); letter-spacing: 0.08em; }
-    .svalue { font-size: 1.6rem; color: var(--gold-hi); }
+    .slabel { font-size: 0.72rem; font-weight: 700; color: rgba(255,255,255,0.5); letter-spacing: 0.06em; text-transform: uppercase; }
+    .svalue { font-size: 1.8rem; font-weight: 800; color: #fff; letter-spacing: -0.03em; line-height: 1.1; }
 
-    .txn-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
-    .txn-card-header {
-      padding: 12px 16px; display: flex; justify-content: space-between;
-      align-items: center; cursor: pointer;
+    .txn-card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
     }
-    .txn-id   { font-family: 'Cinzel', serif; font-size: 0.9rem; color: var(--gold-hi); }
-    .txn-time { font-size: 0.7rem; color: var(--dim); margin-top: 2px; }
-    .txn-rev  { font-size: 1.05rem; color: var(--text); }
-    .txn-card-body { display: none; padding: 12px 16px; border-top: 1px solid var(--border); flex-direction: column; gap: 6px; }
+    .txn-card-header {
+      padding: 16px 18px;
+      display: flex; justify-content: space-between; align-items: center;
+      cursor: pointer;
+    }
+    .txn-card-header:active { background: var(--bg); }
+    .txn-id   { font-family: 'DM Mono', monospace; font-size: 1rem; font-weight: 500; color: var(--teal); letter-spacing: 0.04em; }
+    .txn-time { font-size: 0.78rem; font-weight: 500; color: var(--ink-dim); margin-top: 3px; }
+    .txn-rev  { font-family: 'DM Mono', monospace; font-size: 1.2rem; font-weight: 500; color: var(--ink); }
+
+    .txn-card-body { display: none; padding: 12px 18px; border-top: 1.5px solid var(--border); flex-direction: column; gap: 0; background: var(--bg); }
     .txn-card-body.open { display: flex; }
     .txn-line {
-      display: flex; justify-content: space-between; font-size: 0.88rem; padding: 4px 0;
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 0.95rem; padding: 9px 0;
       border-bottom: 1px solid var(--border);
     }
     .txn-line:last-child { border-bottom: none; }
-    .txn-line .tl-dim { color: var(--dim); }
+    .txn-line .tl-name { font-weight: 600; color: var(--ink); }
+    .txn-line .tl-qty  { font-family: 'DM Mono', monospace; font-size: 0.8rem; color: var(--ink-dim); margin-top: 2px; }
+    .txn-line .tl-price { font-family: 'DM Mono', monospace; font-weight: 500; color: var(--ink); }
 
-    .empty-state { text-align: center; color: var(--dim); font-size: 0.9rem; padding: 40px 20px; }
-    .version-mark { text-align: center; padding: 16px; font-size: 1.4rem; opacity: 0.35; }
+    .empty-state {
+      text-align: center; color: var(--ink-dim);
+      font-size: 1rem; font-weight: 500;
+      padding: 48px 20px;
+    }
+    .version-mark { text-align: center; padding: 16px; font-size: 1.3rem; opacity: 0.3; }
   </style>
 </head>
 <body>
 
 <header>
-  <h1>⚔ Merch Stand</h1>
-  <p>Scan · Log · Export</p>
+  <div>
+    <div class="brand">Merch<span>POS</span></div>
+    <div class="brand-sub">POINT OF SALE</div>
+  </div>
 </header>
 
 <nav>
@@ -260,11 +438,11 @@
     <canvas id="scan-canvas"></canvas>
     <div class="scan-frame"><span></span></div>
   </div>
-  <button class="btn-primary" id="start-btn" onclick="startCamera()">Start Camera</button>
+  <button class="btn btn-primary" id="start-btn" onclick="startCamera()">Start Camera</button>
   <div id="scan-status">Tap Start Camera to begin scanning</div>
   <div id="txn-bar">
     <div>
-      <div class="txn-label">TRANSACTION</div>
+      <div class="txn-label">Transaction Total</div>
       <div class="txn-total" id="txn-total">$0.00</div>
       <div class="txn-count" id="txn-count">0 items</div>
     </div>
@@ -275,18 +453,18 @@
 <!-- ITEMS VIEW -->
 <div id="items-view" class="view">
   <div id="item-list"></div>
-  <button class="btn-outline" onclick="openAddModal()">+ Add New Item</button>
+  <button class="btn btn-outline" onclick="openAddModal()">+ Add New Item</button>
 </div>
 
 <!-- LOG VIEW -->
 <div id="log-view" class="view">
   <div class="log-summary">
-    <div><div class="slabel">TRANSACTIONS</div><div class="svalue" id="log-txn-count">0</div></div>
-    <div style="text-align:right"><div class="slabel">REVENUE</div><div class="svalue" id="log-revenue">$0.00</div></div>
+    <div><div class="slabel">Transactions</div><div class="svalue" id="log-txn-count">0</div></div>
+    <div style="text-align:right"><div class="slabel">Revenue</div><div class="svalue" id="log-revenue">$0.00</div></div>
   </div>
-  <button class="btn-outline" onclick="exportCSV()">⬇ Export Sales CSV</button>
+  <button class="btn btn-outline" onclick="exportCSV()">⬇ Export Sales CSV</button>
   <div id="txn-list"></div>
-  <button class="btn-ghost" onclick="clearLog()">Clear All Sales Data</button>
+  <button class="btn btn-ghost" onclick="clearLog()">Clear All Sales Data</button>
 </div>
 
 <!-- SALE FLASH MODAL -->
@@ -300,45 +478,45 @@
     <button onclick="adjustQty(1)">+</button>
   </div>
   <div class="flash-btns">
-    <button class="btn-green" onclick="addToTransaction()">+ Add to Transaction</button>
-    <button class="btn-ghost" onclick="dismissFlash()">Cancel</button>
+    <button class="btn btn-green" onclick="addToTransaction()">+ Add to Transaction</button>
+    <button class="btn btn-ghost" onclick="dismissFlash()">Cancel</button>
   </div>
 </div>
 
 <!-- CHECKOUT MODAL -->
 <div id="checkout-modal" class="modal">
-  <h2>Checkout</h2>
+  <div class="modal-title">Checkout</div>
   <div class="checkout-items" id="checkout-items"></div>
   <div class="checkout-total-row">
     <span>Total</span>
     <span id="checkout-total"></span>
   </div>
   <div class="modal-btns">
-    <button class="btn-green"  onclick="saveTransaction()" style="flex:2">Save Transaction</button>
-    <button class="btn-ghost"  onclick="closeCheckout()"   style="flex:1">Cancel</button>
+    <button class="btn btn-green"  onclick="saveTransaction()" style="flex:2">Save Transaction</button>
+    <button class="btn btn-ghost"  onclick="closeCheckout()"   style="flex:1">Cancel</button>
   </div>
-  <button class="btn-danger" onclick="voidTransaction()">Void Transaction</button>
+  <button class="btn btn-danger" onclick="voidTransaction()">Void Transaction</button>
 </div>
 
 <!-- ADD ITEM MODAL -->
 <div id="add-modal" class="modal">
-  <h2>New Item</h2>
+  <div class="modal-title">New Item</div>
   <div class="modal-field">
-    <label>ITEM NAME</label>
+    <label>Item Name</label>
     <input id="new-name" type="text" placeholder="e.g. Coffee Mug" oninput="previewSKU()" />
     <div class="sku-preview" id="sku-preview">SKU: —</div>
   </div>
   <div class="modal-field">
-    <label>PRICE ($)</label>
+    <label>Price ($)</label>
     <input id="new-price" type="number" min="0" step="0.01" placeholder="0.00" />
   </div>
   <div class="modal-btns">
-    <button class="btn-primary" onclick="addItem()" style="flex:2">Add Item</button>
-    <button class="btn-ghost"   onclick="closeAddModal()" style="flex:1">Cancel</button>
+    <button class="btn btn-primary" onclick="addItem()" style="flex:2">Add Item</button>
+    <button class="btn btn-ghost"   onclick="closeAddModal()" style="flex:1">Cancel</button>
   </div>
 </div>
 
-<div class="version-mark">🦑</div>
+<div class="version-mark">🏪</div>
 
 <script>
   // ── STATE ──
@@ -348,23 +526,20 @@
     { sku: 'ARROWS', name: 'Arrows', price: 0.50 },
   ];
 
-  let items       = JSON.parse(localStorage.getItem('merch_items') || 'null') || DEFAULTS;
-  let sales       = JSON.parse(localStorage.getItem('merch_sales') || '[]'); // array of transaction objects
-  let transaction = [];
-  let pendingItem = null;
-  let scanning    = false;
+  let items        = JSON.parse(localStorage.getItem('merch_items') || 'null') || DEFAULTS;
+  let sales        = JSON.parse(localStorage.getItem('merch_sales') || '[]');
+  let transaction  = [];
+  let pendingItem  = null;
+  let scanning     = false;
   let lastScanTime = 0;
-  let detector    = null;
+  let detector     = null;
 
   function saveItems() { localStorage.setItem('merch_items', JSON.stringify(items)); }
   function saveSales() { localStorage.setItem('merch_sales', JSON.stringify(sales)); }
   function getItem(sku) { return items.find(i => i.sku === sku); }
 
   // ── LEAVE WARNING ──
-  window.addEventListener('beforeunload', e => {
-    e.preventDefault();
-    e.returnValue = '';
-  });
+  window.addEventListener('beforeunload', e => { e.preventDefault(); e.returnValue = ''; });
 
   // ── NAV ──
   document.querySelectorAll('nav button').forEach(btn => {
@@ -437,7 +612,7 @@
     const n = transaction.length;
     document.getElementById('txn-total').textContent = '$' + txnTotal().toFixed(2);
     document.getElementById('txn-count').textContent = n === 1 ? '1 item' : `${n} items`;
-    document.getElementById('checkout-btn').disabled  = n === 0;
+    document.getElementById('checkout-btn').disabled = n === 0;
   }
 
   function adjustQty(delta) {
@@ -462,7 +637,10 @@
     const grouped = groupItems(transaction);
     document.getElementById('checkout-items').innerHTML = grouped.map(g => `
       <div class="checkout-row">
-        <div><div class="cr-name">${g.name}</div><div class="cr-qty">x${g.qty} @ $${g.price.toFixed(2)}</div></div>
+        <div>
+          <div class="cr-name">${g.name}</div>
+          <div class="cr-qty">x${g.qty} @ $${g.price.toFixed(2)}</div>
+        </div>
         <div class="cr-price">$${(g.price * g.qty).toFixed(2)}</div>
       </div>`).join('');
     document.getElementById('checkout-total').textContent = '$' + txnTotal().toFixed(2);
@@ -514,24 +692,25 @@
     const list = document.getElementById('item-list');
     list.innerHTML = '';
     items.forEach(item => {
-      const sold = sales.reduce((n, t) => n + t.items.filter(i => i.sku === item.sku).reduce((s, i) => s + i.qty, 0), 0);
+      const sold = sales.filter(t => t.txnId && t.items)
+        .reduce((n, t) => n + t.items.filter(i => i.sku === item.sku).reduce((s, i) => s + i.qty, 0), 0);
       const card = document.createElement('div');
       card.className = 'item-card';
       card.innerHTML = `
         <div class="item-card-header" onclick="toggleItemCard(this, '${item.sku}')">
           <div>
             <div class="iname">${item.name}</div>
-            <div class="isku">SKU: ${item.sku} &middot; ${sold} sold</div>
+            <div class="isku">${item.sku} &middot; ${sold} sold</div>
           </div>
           <div class="iprice">$${item.price.toFixed(2)}</div>
         </div>
         <div class="item-card-body">
           <div class="qr-wrap">
             <div id="qr-${item.sku}"></div>
-            <div class="qr-label">Encodes: ${item.sku}</div>
+            <div class="qr-label">Scan content: ${item.sku}</div>
           </div>
           <div>
-            <div style="font-size:0.78rem;color:var(--dim);margin-bottom:6px;">Edit Price</div>
+            <div class="section-label">Edit Price</div>
             <div class="price-edit-row">
               <input type="number" min="0" step="0.01" value="${item.price.toFixed(2)}" id="price-${item.sku}" />
               <button class="save-btn" onclick="updatePrice('${item.sku}')">Save</button>
@@ -548,7 +727,7 @@
     if (isOpen) {
       const el = document.getElementById('qr-' + sku);
       if (el && !el.hasChildNodes()) {
-        new QRCode(el, { text: sku, width: 160, height: 160, colorDark: '#e8dcc8', colorLight: '#1a1410' });
+        new QRCode(el, { text: sku, width: 160, height: 160, colorDark: '#0f1923', colorLight: '#f4f5f7' });
       }
     }
   }
@@ -585,7 +764,7 @@
   function addItem() {
     const name  = document.getElementById('new-name').value.trim();
     const price = parseFloat(document.getElementById('new-price').value);
-    if (!name)                   { alert('Enter an item name.');   return; }
+    if (!name)                     { alert('Enter an item name.');   return; }
     if (isNaN(price) || price < 0) { alert('Enter a valid price.'); return; }
     items.push({ sku: generateSKU(name), name, price });
     saveItems();
@@ -599,21 +778,22 @@
 
   // ── LOG ──
   function renderLog() {
-    const totalRev = sales.filter(t => t.txnId && t.items).reduce((s, t) => s + t.items.reduce((r, i) => r + i.price * i.qty, 0), 0);
-    document.getElementById('log-txn-count').textContent = sales.length;
+    const valid = sales.filter(t => t.txnId && t.items);
+    const totalRev = valid.reduce((s, t) => s + t.items.reduce((r, i) => r + i.price * i.qty, 0), 0);
+    document.getElementById('log-txn-count').textContent = valid.length;
     document.getElementById('log-revenue').textContent   = '$' + totalRev.toFixed(2);
 
     const list = document.getElementById('txn-list');
-    if (!sales.length) { list.innerHTML = '<div class="empty-state">No transactions yet.</div>'; return; }
+    if (!valid.length) { list.innerHTML = '<div class="empty-state">No transactions yet.</div>'; return; }
 
-    const sorted = [...sales].filter(t => t.txnId && t.items).sort((a, b) => a.txnId.localeCompare(b.txnId)).reverse();
+    const sorted = [...valid].sort((a, b) => a.txnId.localeCompare(b.txnId)).reverse();
     list.innerHTML = sorted.map(t => {
       const rev  = t.items.reduce((s, i) => s + i.price * i.qty, 0);
       const time = new Date(t.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      const lines = t.items.map(i =>
-        `<div class="txn-line">
-          <span>${i.name} <span class="tl-dim">x${i.qty}</span></span>
-          <span>$${(i.price * i.qty).toFixed(2)}</span>
+      const lines = t.items.map(i => `
+        <div class="txn-line">
+          <div><div class="tl-name">${i.name}</div><div class="tl-qty">x${i.qty} @ $${i.price.toFixed(2)}</div></div>
+          <div class="tl-price">$${(i.price * i.qty).toFixed(2)}</div>
         </div>`).join('');
       return `
         <div class="txn-card">
@@ -631,16 +811,17 @@
 
   function exportCSV() {
     if (!sales.length) { alert('No sales to export.'); return; }
-    const sorted = [...sales].filter(t => t.txnId && t.items).sort((a, b) => a.txnId.localeCompare(b.txnId));
-    const rows = [['Transaction', 'Time', 'Item', 'SKU', 'Qty', 'Unit Price', 'Line Total']];
+    const valid  = sales.filter(t => t.txnId && t.items);
+    const sorted = [...valid].sort((a, b) => a.txnId.localeCompare(b.txnId));
+    const rows   = [['Transaction', 'Time', 'Item', 'SKU', 'Qty', 'Unit Price', 'Line Total']];
     sorted.forEach(t => {
       t.items.forEach(i => {
         rows.push([t.txnId, t.time, i.name, i.sku, i.qty, i.price.toFixed(2), (i.price * i.qty).toFixed(2)]);
       });
     });
+    const suffix = Math.random().toString(36).slice(2, 7).toUpperCase();
     const a = document.createElement('a');
     a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(rows.map(r => r.join(',')).join('\n'));
-    const suffix = Math.random().toString(36).slice(2, 7).toUpperCase();
     a.download = 'sales_' + new Date().toISOString().slice(0, 10) + '_' + suffix + '.csv';
     a.click();
   }
