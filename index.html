@@ -287,27 +287,39 @@
       document.getElementById('start-btn').style.display = 'none';
       document.getElementById('scan-status').textContent = 'Scanning…';
       scanning = true;
-      requestAnimationFrame(tick);
+      requestAnimationFrame(ts => tick(ts));
     } catch {
       document.getElementById('scan-status').textContent = 'Camera access denied.';
     }
   }
 
-  function tick() {
+  let lastTickTime = 0;
+  function tick(timestamp) {
     if (!scanning) return;
+    requestAnimationFrame(tick);
+    if (timestamp - lastTickTime < 200) return; // scan ~5fps, not 60
+    lastTickTime = timestamp;
+
     const video = document.getElementById('preview');
-    if (video.readyState !== video.HAVE_ENOUGH_DATA) { requestAnimationFrame(tick); return; }
+    if (video.readyState !== video.HAVE_ENOUGH_DATA) return;
+
+    // Downscale to max 640px wide — jsQR works better on smaller images
+    const MAX = 640;
+    const scale = Math.min(1, MAX / video.videoWidth);
+    const w = Math.floor(video.videoWidth  * scale);
+    const h = Math.floor(video.videoHeight * scale);
+
     const canvas = document.getElementById('scan-canvas');
-    canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+    canvas.width = w; canvas.height = h;
     const ctx = canvas.getContext('2d');
-    ctx.drawImage(video, 0, 0);
-    const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const code = jsQR(img.data, img.width, img.height);
+    ctx.drawImage(video, 0, 0, w, h);
+
+    const img = ctx.getImageData(0, 0, w, h);
+    const code = jsQR(img.data, img.width, img.height, { inversionAttempts: 'dontInvert' });
     if (code && Date.now() - lastScanTime > 2000) {
       lastScanTime = Date.now();
       handleScan(code.data.trim().toUpperCase());
     }
-    requestAnimationFrame(tick);
   }
 
   function handleScan(sku) {
