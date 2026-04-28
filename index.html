@@ -315,7 +315,7 @@
   </div>
 </div>
 
-<div class="version-mark">🎪</div>
+<div class="version-mark">🧲</div>
 
 <script>
   // ── STATE ──
@@ -443,7 +443,7 @@
     const now = new Date();
     const mmdd = String(now.getMonth() + 1).padStart(2, '0') + String(now.getDate()).padStart(2, '0');
     const prefix = mmdd + '-';
-    const todayCount = sales.filter(t => t.txnId.startsWith(prefix)).length;
+    const todayCount = sales.filter(t => t.txnId && t.txnId.startsWith(prefix)).length;
     return prefix + String(todayCount + 1).padStart(2, '0');
   }
 
@@ -574,7 +574,7 @@
     const list = document.getElementById('txn-list');
     if (!sales.length) { list.innerHTML = '<div class="empty-state">No transactions yet.</div>'; return; }
 
-    const sorted = [...sales].sort((a, b) => a.txnId.localeCompare(b.txnId)).reverse();
+    const sorted = [...sales].filter(t => t.txnId && t.items).sort((a, b) => a.txnId.localeCompare(b.txnId)).reverse();
     list.innerHTML = sorted.map(t => {
       const rev  = t.items.reduce((s, i) => s + i.price * i.qty, 0);
       const time = new Date(t.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -599,7 +599,7 @@
 
   function exportCSV() {
     if (!sales.length) { alert('No sales to export.'); return; }
-    const sorted = [...sales].sort((a, b) => a.txnId.localeCompare(b.txnId));
+    const sorted = [...sales].filter(t => t.txnId && t.items).sort((a, b) => a.txnId.localeCompare(b.txnId));
     const rows = [['Transaction', 'Time', 'Item', 'SKU', 'Qty', 'Unit Price', 'Line Total']];
     sorted.forEach(t => {
       t.items.forEach(i => {
