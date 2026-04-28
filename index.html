@@ -133,6 +133,24 @@
     .flash-btns { display: flex; gap: 10px; width: 100%; max-width: 360px; margin-top: 8px; }
     .flash-btns .btn-green { flex: 2; }
     .flash-btns .btn-ghost { flex: 1; }
+    .qty-stepper {
+      display: flex; align-items: center; gap: 0;
+      border: 1px solid var(--border); border-radius: 6px; overflow: hidden;
+    }
+    .qty-stepper button {
+      width: 44px; height: 44px; background: var(--surface2); border: none;
+      color: var(--gold-hi); font-size: 1.4rem; cursor: pointer; line-height: 1;
+    }
+    .qty-stepper button:active { background: var(--border); }
+    .qty-stepper input {
+      width: 52px; height: 44px; background: var(--bg); border: none;
+      color: var(--text); font-family: 'Cinzel', serif; font-size: 1.1rem;
+      text-align: center;
+    }
+    /* hide number input spinners */
+    .qty-stepper input::-webkit-outer-spin-button,
+    .qty-stepper input::-webkit-inner-spin-button { -webkit-appearance: none; }
+    .qty-stepper input[type=number] { -moz-appearance: textfield; }
 
     /* Checkout modal */
     .checkout-items {
@@ -276,6 +294,11 @@
   <div class="flash-sku"   id="flash-sku"></div>
   <div class="flash-name"  id="flash-name"></div>
   <div class="flash-price" id="flash-price"></div>
+  <div class="qty-stepper">
+    <button onclick="adjustQty(-1)">−</button>
+    <input id="flash-qty" type="number" value="1" min="1" />
+    <button onclick="adjustQty(1)">+</button>
+  </div>
   <div class="flash-btns">
     <button class="btn-green" onclick="addToTransaction()">+ Add to Transaction</button>
     <button class="btn-ghost" onclick="dismissFlash()">Cancel</button>
@@ -315,7 +338,7 @@
   </div>
 </div>
 
-<div class="version-mark">🧲</div>
+<div class="version-mark">🦑</div>
 
 <script>
   // ── STATE ──
@@ -403,6 +426,7 @@
 
   function dismissFlash() {
     document.getElementById('sale-flash').classList.remove('show');
+    document.getElementById('flash-qty').value = 1;
     pendingItem = null;
   }
 
@@ -416,13 +440,21 @@
     document.getElementById('checkout-btn').disabled  = n === 0;
   }
 
+  function adjustQty(delta) {
+    const input = document.getElementById('flash-qty');
+    input.value = Math.max(1, parseInt(input.value || 1) + delta);
+  }
+
   function addToTransaction() {
     if (!pendingItem) return;
-    transaction.push({ sku: pendingItem.sku, name: pendingItem.name, price: pendingItem.price });
+    const qty = Math.max(1, parseInt(document.getElementById('flash-qty').value) || 1);
+    for (let i = 0; i < qty; i++) {
+      transaction.push({ sku: pendingItem.sku, name: pendingItem.name, price: pendingItem.price });
+    }
     updateTxnBar();
     const name = pendingItem.name;
     dismissFlash();
-    document.getElementById('scan-status').textContent = `+ ${name} added`;
+    document.getElementById('scan-status').textContent = `+ ${qty > 1 ? qty + 'x ' : ''}${name} added`;
     setTimeout(() => { if (scanning) document.getElementById('scan-status').textContent = 'Scanning…'; }, 1200);
   }
 
@@ -567,7 +599,7 @@
 
   // ── LOG ──
   function renderLog() {
-    const totalRev = sales.reduce((s, t) => s + t.items.reduce((r, i) => r + i.price * i.qty, 0), 0);
+    const totalRev = sales.filter(t => t.txnId && t.items).reduce((s, t) => s + t.items.reduce((r, i) => r + i.price * i.qty, 0), 0);
     document.getElementById('log-txn-count').textContent = sales.length;
     document.getElementById('log-revenue').textContent   = '$' + totalRev.toFixed(2);
 
@@ -608,7 +640,8 @@
     });
     const a = document.createElement('a');
     a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(rows.map(r => r.join(',')).join('\n'));
-    a.download = 'sales_' + new Date().toISOString().slice(0, 10) + '.csv';
+    const suffix = Math.random().toString(36).slice(2, 7).toUpperCase();
+    a.download = 'sales_' + new Date().toISOString().slice(0, 10) + '_' + suffix + '.csv';
     a.click();
   }
 
