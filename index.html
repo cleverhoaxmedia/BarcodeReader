@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Merch Stand</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=IM+Fell+English&display=swap');
+
+    :root {
+      --bg: #1a1410;
+      --surface: #231d17;
+      --border: #4a3828;
+      --gold: #c9962a;
+      --gold-light: #e8b84b;
+      --text: #e8dcc8;
+      --text-dim: #8a7a62;
+      --success: #4caf50;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'IM Fell English', serif;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: var(--surface);
+      border-bottom: 2px solid var(--gold);
+      padding: 14px 20px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    header h1 { font-family: 'Cinzel', serif; font-size: 1.3rem; color: var(--gold-light); letter-spacing: 0.1em; }
+    header p  { font-size: 0.78rem; color: var(--text-dim); margin-top: 2px; }
+
+    nav { display: flex; background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    nav button {
+      flex: 1; padding: 10px; background: none; border: none;
+      color: var(--text-dim); font-family: 'Cinzel', serif;
+      font-size: 0.68rem; letter-spacing: 0.08em; cursor: pointer;
+      border-bottom: 2px solid transparent; transition: all 0.2s;
+    }
+    nav button.active { color: var(--gold-light); border-bottom-color: var(--gold); }
+
+    .view { display: none; flex: 1; flex-direction: column; overflow-y: auto; padding: 16px; gap: 10px; }
+    .view.active { display: flex; }
+
+    .btn-primary {
+      padding: 13px; background: var(--gold); border: none; border-radius: 6px;
+      font-family: 'Cinzel', serif; font-size: 0.85rem; font-weight: 700;
+      color: var(--bg); cursor: pointer; letter-spacing: 0.08em; width: 100%;
+    }
+    .btn-primary:active { background: var(--gold-light); }
+    .btn-outline {
+      padding: 11px; background: none; border: 2px solid var(--gold);
+      border-radius: 6px; font-family: 'Cinzel', serif; font-size: 0.82rem;
+      color: var(--gold-light); cursor: pointer; letter-spacing: 0.08em; width: 100%;
+    }
+    .btn-outline:active { background: var(--gold); color: var(--bg); }
+    .btn-ghost {
+      padding: 10px; background: none; border: 1px solid var(--border);
+      border-radius: 6px; font-family: 'Cinzel', serif; font-size: 0.72rem;
+      color: var(--text-dim); cursor: pointer; width: 100%;
+    }
+
+    /* ── SCANNER ── */
+    #scanner-view { align-items: center; }
+
+    #camera-wrap {
+      position: relative; width: 100%; max-width: 360px;
+      border-radius: 8px; overflow: hidden; border: 2px solid var(--border);
+      background: #000; aspect-ratio: 1;
+    }
+    #preview { width: 100%; height: 100%; object-fit: cover; display: block; }
+    #scan-canvas { display: none; }
+
+    .scan-frame { position: absolute; inset: 0; pointer-events: none; }
+    .scan-frame::before, .scan-frame::after,
+    .scan-frame span::before, .scan-frame span::after {
+      content: ''; position: absolute; width: 28px; height: 28px;
+      border-color: var(--gold); border-style: solid;
+    }
+    .scan-frame::before { top: 18px; left: 18px; border-width: 3px 0 0 3px; }
+    .scan-frame::after  { top: 18px; right: 18px; border-width: 3px 3px 0 0; }
+    .scan-frame span::before { bottom: 18px; left: 18px; border-width: 0 0 3px 3px; }
+    .scan-frame span::after  { bottom: 18px; right: 18px; border-width: 0 3px 3px 0; }
+
+    #scan-status { font-size: 0.9rem; color: var(--text-dim); text-align: center; }
+
+    /* sale flash */
+    #sale-flash {
+      position: fixed; inset: 0; background: rgba(26,20,16,0.95);
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 10px; z-index: 100;
+      opacity: 0; pointer-events: none; transition: opacity 0.2s;
+    }
+    #sale-flash.show { opacity: 1; pointer-events: all; }
+    #sale-flash .flash-sku   { font-size: 0.8rem; color: var(--text-dim); }
+    #sale-flash .flash-name  { font-family: 'Cinzel', serif; font-size: 2rem; color: var(--gold-light); }
+    #sale-flash .flash-price { font-size: 1.4rem; color: var(--text); }
+    .flash-btns { display: flex; gap: 12px; margin-top: 16px; }
+    .flash-btns .confirm { padding: 14px 40px; background: var(--success); border: none; border-radius: 6px; font-family: 'Cinzel', serif; font-size: 1rem; font-weight: 700; color: #fff; cursor: pointer; }
+    .flash-btns .cancel  { padding: 14px 24px; background: none; border: 1px solid var(--border); border-radius: 6px; font-family: 'Cinzel', serif; font-size: 0.8rem; color: var(--text-dim); cursor: pointer; }
+
+    /* ── ITEMS ── */
+    .item-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
+    }
+    .item-card-header {
+      padding: 14px 16px; display: flex; justify-content: space-between;
+      align-items: center; cursor: pointer; gap: 8px;
+    }
+    .iname { font-family: 'Cinzel', serif; font-size: 1rem; color: var(--gold-light); }
+    .isku  { font-size: 0.7rem; color: var(--text-dim); margin-top: 2px; }
+    .iprice { font-size: 1.1rem; white-space: nowrap; }
+
+    .item-card-body { display: none; padding: 14px 16px; border-top: 1px solid var(--border); gap: 12px; flex-direction: column; }
+    .item-card-body.open { display: flex; }
+
+    .qr-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .qr-wrap .qr-label { font-size: 0.72rem; color: var(--text-dim); }
+
+    .price-edit-row { display: flex; gap: 8px; }
+    .price-edit-row input {
+      flex: 1; padding: 10px 12px; background: var(--bg);
+      border: 1px solid var(--border); border-radius: 6px;
+      color: var(--text); font-family: 'IM Fell English', serif; font-size: 1rem;
+    }
+    .price-edit-row .save-btn {
+      padding: 10px 16px; background: var(--gold); border: none; border-radius: 6px;
+      font-family: 'Cinzel', serif; font-size: 0.75rem; font-weight: 700;
+      color: var(--bg); cursor: pointer;
+    }
+
+    /* add modal */
+    #add-modal {
+      position: fixed; inset: 0; background: rgba(26,20,16,0.96);
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; padding: 24px; gap: 14px; z-index: 100;
+      opacity: 0; pointer-events: none; transition: opacity 0.2s;
+    }
+    #add-modal.show { opacity: 1; pointer-events: all; }
+    #add-modal h2 { font-family: 'Cinzel', serif; color: var(--gold-light); font-size: 1.2rem; }
+
+    .modal-field { width: 100%; max-width: 360px; }
+    .modal-field label { display: block; font-size: 0.72rem; color: var(--text-dim); margin-bottom: 6px; letter-spacing: 0.06em; }
+    .modal-field input {
+      width: 100%; padding: 12px; background: var(--surface);
+      border: 1px solid var(--border); border-radius: 6px;
+      color: var(--text); font-family: 'IM Fell English', serif; font-size: 1rem;
+    }
+    .sku-preview { font-size: 0.75rem; color: var(--text-dim); margin-top: 6px; }
+    .modal-btns { display: flex; gap: 10px; width: 100%; max-width: 360px; }
+
+    /* ── LOG ── */
+    .log-summary {
+      background: var(--surface); border: 1px solid var(--gold); border-radius: 8px;
+      padding: 16px; display: flex; justify-content: space-between; align-items: center;
+    }
+    .log-summary .slabel { font-family: 'Cinzel', serif; font-size: 0.72rem; color: var(--text-dim); letter-spacing: 0.08em; }
+    .log-summary .svalue { font-size: 1.6rem; color: var(--gold-light); }
+
+    .log-list { display: flex; flex-direction: column; gap: 8px; }
+    .log-row {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 6px;
+      padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem;
+    }
+    .log-row .ltime { font-size: 0.72rem; color: var(--text-dim); }
+    .log-row .lprice { color: var(--gold-light); }
+    .empty-state { text-align: center; color: var(--text-dim); font-size: 0.9rem; padding: 40px 20px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>⚔ Merch Stand</h1>
+  <p>Scan · Log · Export</p>
+</header>
+
+<nav>
+  <button class="active" data-view="scanner">SCANNER</button>
+  <button data-view="items">ITEMS</button>
+  <button data-view="log">SALES LOG</button>
+</nav>
+
+<!-- SCANNER -->
+<div id="scanner-view" class="view active">
+  <div id="camera-wrap">
+    <video id="preview" playsinline autoplay muted></video>
+    <canvas id="scan-canvas"></canvas>
+    <div class="scan-frame"><span></span></div>
+  </div>
+  <button class="btn-primary" id="start-btn" onclick="startCamera()">Start Camera</button>
+  <div id="scan-status">Tap Start Camera to begin scanning</div>
+</div>
+
+<!-- ITEMS -->
+<div id="items-view" class="view">
+  <div id="item-list"></div>
+  <button class="btn-outline" onclick="openAddModal()">+ Add New Item</button>
+</div>
+
+<!-- LOG -->
+<div id="log-view" class="view">
+  <div class="log-summary">
+    <div><div class="slabel">TOTAL SALES</div><div class="svalue" id="total-count">0</div></div>
+    <div style="text-align:right"><div class="slabel">REVENUE</div><div class="svalue" id="total-revenue">$0.00</div></div>
+  </div>
+  <button class="btn-outline" onclick="exportCSV()">⬇ Export Sales CSV</button>
+  <div class="log-list" id="log-list"></div>
+  <button class="btn-ghost" onclick="clearLog()">Clear Log</button>
+</div>
+
+<!-- SALE FLASH -->
+<div id="sale-flash">
+  <div class="flash-sku"  id="flash-sku"></div>
+  <div class="flash-name" id="flash-name"></div>
+  <div class="flash-price" id="flash-price"></div>
+  <div class="flash-btns">
+    <button class="confirm" onclick="confirmSale()">✓ Sold</button>
+    <button class="cancel"  onclick="dismissFlash()">Cancel</button>
+  </div>
+</div>
+
+<!-- ADD ITEM MODAL -->
+<div id="add-modal">
+  <h2>New Item</h2>
+  <div class="modal-field">
+    <label>ITEM NAME</label>
+    <input id="new-name" type="text" placeholder="e.g. Coffee Mug" oninput="previewSKU()" />
+    <div class="sku-preview" id="sku-preview">SKU: —</div>
+  </div>
+  <div class="modal-field">
+    <label>PRICE ($)</label>
+    <input id="new-price" type="number" min="0" step="0.01" placeholder="0.00" />
+  </div>
+  <div class="modal-btns">
+    <button class="btn-primary" onclick="addItem()" style="flex:2">Add Item</button>
+    <button class="btn-ghost"   onclick="closeAddModal()" style="flex:1">Cancel</button>
+  </div>
+</div>
+
+<script>
+  // ── STATE ──
+  const DEFAULTS = [
+    { sku: 'SWORD',  name: 'Sword',  price: 2.00 },
+    { sku: 'POTION', name: 'Potion', price: 1.50 },
+    { sku: 'ARROWS', name: 'Arrows', price: 0.50 },
+  ];
+  let items = JSON.parse(localStorage.getItem('merch_items') || 'null') || DEFAULTS;
+  let sales = JSON.parse(localStorage.getItem('merch_sales') || '[]');
+  let pendingItem = null;
+  let scanning = false;
+  let lastScanTime = 0;
+
+  function saveItems() { localStorage.setItem('merch_items', JSON.stringify(items)); }
+  function saveSales() { localStorage.setItem('merch_sales', JSON.stringify(sales)); }
+  function getItem(sku) { return items.find(i => i.sku === sku); }
+
+  // ── NAV ──
+  document.querySelectorAll('nav button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.view + '-view').classList.add('active');
+      if (btn.dataset.view === 'items') renderItems();
+      if (btn.dataset.view === 'log')   renderLog();
+    });
+  });
+
+  // ── SCANNER ──
+  async function startCamera() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment', width: { ideal: 1280 } }
+      });
+      document.getElementById('preview').srcObject = stream;
+      document.getElementById('start-btn').style.display = 'none';
+      document.getElementById('scan-status').textContent = 'Scanning…';
+      scanning = true;
+      requestAnimationFrame(tick);
+    } catch {
+      document.getElementById('scan-status').textContent = 'Camera access denied.';
+    }
+  }
+
+  function tick() {
+    if (!scanning) return;
+    const video = document.getElementById('preview');
+    if (video.readyState !== video.HAVE_ENOUGH_DATA) { requestAnimationFrame(tick); return; }
+    const canvas = document.getElementById('scan-canvas');
+    canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0);
+    const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const code = jsQR(img.data, img.width, img.height);
+    if (code && Date.now() - lastScanTime > 2000) {
+      lastScanTime = Date.now();
+      handleScan(code.data.trim().toUpperCase());
+    }
+    requestAnimationFrame(tick);
+  }
+
+  function handleScan(sku) {
+    const item = getItem(sku);
+    if (!item) {
+      document.getElementById('scan-status').textContent = `Unknown SKU: ${sku}`;
+      return;
+    }
+    pendingItem = item;
+    document.getElementById('flash-sku').textContent = sku;
+    document.getElementById('flash-name').textContent = item.name;
+    document.getElementById('flash-price').textContent = '$' + item.price.toFixed(2);
+    document.getElementById('sale-flash').classList.add('show');
+  }
+
+  function confirmSale() {
+    if (!pendingItem) return;
+    sales.push({ sku: pendingItem.sku, name: pendingItem.name, price: pendingItem.price, time: new Date().toISOString() });
+    saveSales();
+    const name = pendingItem.name;
+    dismissFlash();
+    document.getElementById('scan-status').textContent = `✓ ${name} logged!`;
+    setTimeout(() => { if (scanning) document.getElementById('scan-status').textContent = 'Scanning…'; }, 1500);
+  }
+
+  function dismissFlash() {
+    document.getElementById('sale-flash').classList.remove('show');
+    pendingItem = null;
+  }
+
+  // ── ITEMS ──
+  function renderItems() {
+    const list = document.getElementById('item-list');
+    list.innerHTML = '';
+    items.forEach(item => {
+      const sold = sales.filter(s => s.sku === item.sku).length;
+      const card = document.createElement('div');
+      card.className = 'item-card';
+      card.innerHTML = `
+        <div class="item-card-header" onclick="toggleCard(this, '${item.sku}')">
+          <div>
+            <div class="iname">${item.name}</div>
+            <div class="isku">SKU: ${item.sku} &middot; ${sold} sold</div>
+          </div>
+          <div class="iprice">$${item.price.toFixed(2)}</div>
+        </div>
+        <div class="item-card-body">
+          <div class="qr-wrap">
+            <div id="qr-${item.sku}"></div>
+            <div class="qr-label">Encodes: ${item.sku}</div>
+          </div>
+          <div>
+            <div style="font-size:0.78rem;color:var(--text-dim);margin-bottom:6px;">Edit Price</div>
+            <div class="price-edit-row">
+              <input type="number" min="0" step="0.01" value="${item.price.toFixed(2)}" id="price-${item.sku}" />
+              <button class="save-btn" onclick="updatePrice('${item.sku}')">Save</button>
+            </div>
+          </div>
+        </div>`;
+      list.appendChild(card);
+    });
+  }
+
+  function toggleCard(header, sku) {
+    const body = header.nextElementSibling;
+    const isOpen = body.classList.toggle('open');
+    if (isOpen) {
+      const container = document.getElementById('qr-' + sku);
+      if (container && !container.hasChildNodes()) {
+        new QRCode(container, {
+          text: sku, width: 160, height: 160,
+          colorDark: '#e8dcc8', colorLight: '#1a1410'
+        });
+      }
+    }
+  }
+
+  function updatePrice(sku) {
+    const val = parseFloat(document.getElementById('price-' + sku).value);
+    if (isNaN(val) || val < 0) { alert('Invalid price.'); return; }
+    getItem(sku).price = val;
+    saveItems();
+    renderItems();
+  }
+
+  // ── ADD ITEM ──
+  function generateSKU(name) {
+    const base = name.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 7);
+    let sku = base, n = 1;
+    while (items.find(i => i.sku === sku)) { sku = base + (++n); }
+    return sku;
+  }
+
+  function previewSKU() {
+    const name = document.getElementById('new-name').value.trim();
+    document.getElementById('sku-preview').textContent = name ? 'SKU: ' + generateSKU(name) : 'SKU: —';
+  }
+
+  function openAddModal()  { document.getElementById('add-modal').classList.add('show'); }
+  function closeAddModal() {
+    document.getElementById('add-modal').classList.remove('show');
+    document.getElementById('new-name').value = '';
+    document.getElementById('new-price').value = '';
+    document.getElementById('sku-preview').textContent = 'SKU: —';
+  }
+
+  function addItem() {
+    const name  = document.getElementById('new-name').value.trim();
+    const price = parseFloat(document.getElementById('new-price').value);
+    if (!name)              { alert('Enter an item name.');   return; }
+    if (isNaN(price) || price < 0) { alert('Enter a valid price.'); return; }
+    items.push({ sku: generateSKU(name), name, price });
+    saveItems();
+    closeAddModal();
+    // switch to items tab
+    document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelector('[data-view="items"]').classList.add('active');
+    document.getElementById('items-view').classList.add('active');
+    renderItems();
+  }
+
+  // ── LOG ──
+  function renderLog() {
+    document.getElementById('total-count').textContent   = sales.length;
+    document.getElementById('total-revenue').textContent = '$' + sales.reduce((s, x) => s + x.price, 0).toFixed(2);
+    const list = document.getElementById('log-list');
+    if (!sales.length) { list.innerHTML = '<div class="empty-state">No sales yet.</div>'; return; }
+    list.innerHTML = [...sales].reverse().map(s => {
+      const ts = new Date(s.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      return `<div class="log-row">
+        <div><div>${s.name}</div><div class="ltime">${ts}</div></div>
+        <div class="lprice">$${s.price.toFixed(2)}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function exportCSV() {
+    if (!sales.length) { alert('No sales to export.'); return; }
+    const rows = [['Time','Item','SKU','Price'], ...sales.map(s => [s.time, s.name, s.sku, s.price.toFixed(2)])];
+    const a = document.createElement('a');
+    a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(rows.map(r => r.join(',')).join('\n'));
+    a.download = 'sales_' + new Date().toISOString().slice(0, 10) + '.csv';
+    a.click();
+  }
+
+  function clearLog() {
+    if (!confirm('Clear all sales? This cannot be undone.')) return;
+    sales = []; saveSales(); renderLog();
+  }
+</script>
+</body>
+</html>
